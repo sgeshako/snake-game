@@ -11,5 +11,8 @@ typedef enum
 
 #endif
 
-// Function to find the index of a given integer in an array
+// Function to find the index of a given integer in an array.
 int index_of(const int arr[], int size, int target);
+
+// Fuction to shift array one element to the left.
+void shift_left(int arr[], int size); 

@@ -12,89 +12,21 @@
 
 #define CENTER (SIZE / 2)
 
-#define INPUT_TIMEOUT_MS 200
+#define INPUT_TIMEOUT_MS 100
 
 typedef struct {
     int x;
     int y;
 } point_t;
 
-// static const int initial_snake[]  = { LEFT, LEFT, LEFT, LEFT, DOWN, DOWN, DOWN, DOWN, RIGHT, RIGHT, RIGHT, RIGHT, UP, UP, RIGHT };
-static const int initial_snake[]  = { RIGHT, RIGHT, RIGHT, RIGHT, UP, UP, RIGHT, RIGHT, RIGHT, UP, UP, RIGHT };
+static const int initial_snake[]  = { RIGHT, RIGHT, RIGHT, RIGHT };
+// static const int initial_snake[]  = { RIGHT, RIGHT, RIGHT, RIGHT, UP, UP, RIGHT, RIGHT, RIGHT, UP, UP, RIGHT };
 static const int initial_snake_size = sizeof(initial_snake) / sizeof(initial_snake[0]);
 
 static int snake[TOTAL];
 static int snake_length;
 
 static bool food = false;
-static int curr_x = 5;
-static int curr_y = 11;
-
-void draw_snake_coordinates(int snake[TOTAL], int plot[SIZE][SIZE])
-{
-    int temp_curr_x = curr_x;
-    int temp_curr_y = curr_y;
-
-    for (size_t i = 0; i < TOTAL; i++)
-    {
-        switch (snake[i])
-        {
-            case LEFT:
-                plot[temp_curr_y][++temp_curr_x] = 'L';
-                break;
-            case RIGHT:
-                plot[temp_curr_y][--temp_curr_x] = 'R';
-                break;
-            case UP:
-                plot[++temp_curr_y][temp_curr_x] = 'U';
-                break;
-            case DOWN:
-                plot[--temp_curr_y][temp_curr_x] = 'D';
-                break;
-            default:
-                return;
-        }
-    }
-    
-}
-
-void plot_board(int plot[SIZE][SIZE])
-{
-    static int snake_coordinates[TOTAL][2] = {};
-    
-    draw_snake_coordinates(snake, plot);
-    // for (size_t i = 0; i < 15; i++)
-    // {
-    //     printf("(%d, %d)\n", snake_coordinates[i][0], snake_coordinates[i][1]);
-    // }
-    
-
-    // update boundaries
-    for (size_t row = 0; row < SIZE; row++)
-    {
-        for (size_t col = 0; col < SIZE; col++)
-        {
-            if (row == 0 || row == SIZE - 1)
-            {
-                plot[row][col] = '@';
-            }
-            else if (col == 0 || col == SIZE - 1)
-            {
-                plot[row][col] = '#';
-            }
-        }
-    }
-
-    for (size_t row = 0; row < SIZE; row++)
-    {
-        for (size_t col = 0; col < SIZE; col++)
-        {
-            printf(" %c", plot[row][col]);
-        }
-        printf("\n");
-    }
-    
-}
 
 static void init_snake()
 {
@@ -102,94 +34,53 @@ static void init_snake()
     snake_length = initial_snake_size;
 }
 
-static void init_draw_snake(int snake[TOTAL], int snake_length, point_t tail, point_t * p_head)
+static void draw_snake(int snake[TOTAL], int snake_length, point_t head)
 {
-    int temp_curr_x = tail.x;
-    int temp_curr_y = tail.y;
+    int temp_curr_x = head.x;
+    int temp_curr_y = head.y;
 
-    for (size_t i = 0; i < snake_length; i++)
+    for (int i = snake_length - 1; i >= 0; i--)
     {
         switch (snake[i])
         {
             case LEFT:
-                mvprintw(temp_curr_y, --temp_curr_x, "L");
+                mvprintw(temp_curr_y, temp_curr_x++, "L");
                 break;
             case RIGHT:
-                mvprintw(temp_curr_y, ++temp_curr_x, "R");
+                mvprintw(temp_curr_y, temp_curr_x--, "R");
                 break;
             case UP:
-                mvprintw(--temp_curr_y, temp_curr_x, "U");
+                mvprintw(temp_curr_y++, temp_curr_x, "U");
                 break;
             case DOWN:
-                mvprintw(++temp_curr_y, temp_curr_x, "D");
+                mvprintw(temp_curr_y--, temp_curr_x, "D");
                 break;
             default:
                 return;
         }
     }
-
-    p_head->x = temp_curr_x;
-    p_head->y = temp_curr_y;
 }
 
-void shiftLeft(int arr[], int size) 
+static void move_snake(point_t * p_head)
 {
-    // Shift all elements to the left
-    for (int i = 0; i < size - 1; i++) {
-        arr[i] = arr[i + 1];
-    }
-
-    // Set the last element to 0 (or any default value)
-    // arr[size - 1] = 0;
-}
-
-static void moveSnake(point_t * p_tail, point_t * p_head)
-{
-    
-
-    int tail_is = snake[0];
-    static int i = 1;
-
-    // mvprintw(i++, 0, "Current action: %s", tail_is ? (tail_is == 1 ? "RIGHT" : (tail_is == 2 ? "UP" : "DOWN")) : "LEFT");
-    // printw("\n");
-
-    switch (tail_is) {
-        case DOWN:
-            mvprintw(p_tail->y += 1, p_tail->x, " ");
-            break;
-        case UP:
-            mvprintw(p_tail->y -= 1, p_tail->x, " ");
-            break;
-        case RIGHT:
-            mvprintw(p_tail->y, p_tail->x += 1, " ");
-            break;
-        case LEFT:
-            mvprintw(p_tail->y, p_tail->x -= 1,  " ");
-            break;
-    }
-
-    // mvprintw(0, 0, "AT moment after move: (%d, %d)", p_tail->y, p_tail->x);
-    // printw("\n");
-
-    // refresh();
     int head_is = snake[snake_length - 1];
 
     switch (head_is) {
         case DOWN:
-            mvprintw(p_head->y += 1,p_head->x,  "D");
+            p_head->y += 1;
             break;
         case UP:
-            mvprintw( p_head->y -= 1,p_head->x, "U");
+            p_head->y -= 1;
             break;
         case RIGHT:
-            mvprintw(p_head->y,p_head->x += 1,  "R");
+            p_head->x += 1;
             break;
         case LEFT:
-            mvprintw(p_head->y,p_head->x -= 1,  "L");
+            p_head->x -= 1;
             break;
     }
 
-    shiftLeft(snake, snake_length);
+    shift_left(snake, snake_length);
 }
 
 static void place_food()
@@ -224,7 +115,7 @@ static const direction_config_t state_machine[5] = {
 		{ { LEFT, RIGHT, DOWN, DOWN } } // 3: DOWN
 };
 
-static void change_direction(int key)
+static void change_direction(int key, point_t * p_head)
 {
     switch (key)
     {
@@ -243,61 +134,33 @@ static void change_direction(int key)
         e_direction current_direction = snake[snake_length - 1];
         e_direction next_direction = state_machine[current_direction].next_states[input];
 
+        shift_left(snake, snake_length);
         snake[snake_length - 1] = next_direction;
+        // snake_length = snake_length + 1;
+
+        switch (next_direction) {
+            case DOWN:
+                p_head->y += 1;
+                break;
+            case UP:
+                p_head->y -= 1;
+                break;
+            case RIGHT:
+                p_head->x += 1;
+                break;
+            case LEFT:
+                p_head->x -= 1;
+                break;
+        }
     }
     else
     {
         printw("Uknownn key: %d\n", key);
     }
-    
-    // switch (key) {
-    //         case KEY_DOWN:
-    //             snake[snake_length - 1] = DOWN;
-    //             break;
-    //         case KEY_UP:
-    //             snake[snake_length - 1] = UP;
-    //             break;
-    //         case KEY_RIGHT:
-    //             snake[snake_length - 1] = RIGHT;
-    //             break;
-    //         case KEY_LEFT:
-    //             snake[snake_length - 1] = LEFT;
-    //             break;
-    //         case 'q':
-    //             printw("Exiting...\n");
-    //             refresh();
-    //             endwin(); // End curses mode
-    //             return 0;
-    //         default:
-    //             // printw("Unknown key: %d\n", key);
-    //             break;
-    //     }
 }
 
 int main(void)
 {
-    // int plot [SIZE][SIZE] = {};
-
-    // for (size_t i = 0; i < SIZE; i++)
-    // {
-    //     for (size_t j = 0; j < SIZE; j++)
-    //     {
-    //         plot[i][j] = '.';
-    //     }
-    // }
-
-    // plot_board(plot);
-
-
-    
-
-
-    // e_direction my_D = DOWN;
-    // printf(" d: %d \n", my_D);
-    // printf(" sum: %d\n", DOWN + 5);
-
-
-
     int key;
 
     // Initialize ncurses
@@ -305,63 +168,69 @@ int main(void)
     // cbreak();               // Disable line buffering
     // noecho();               // Don't echo input
     keypad(stdscr, TRUE);   // Enable special keys (e.g., arrow keys)
-    // timeout(INPUT_TIMEOUT_MS);           // Wait for input for 100ms, then return ERR
-    nodelay(stdscr, TRUE);  // Non-blocking mode
+    timeout(INPUT_TIMEOUT_MS);           // Wait for input for 100ms, then return ERR
+    // nodelay(stdscr, TRUE);  // Non-blocking mode
 
     printw("Press arrow keys (Left, Right, Up, Down) to move. Press 'q' to quit.\n");
     refresh();
 
-    // point_t head = { .x = 15, .y = 7 };
-    // point_t tail = { .x = 14, .y = 5 };
-
+    // Initialize snake array.
     init_snake();
 
-    point_t head = {};
-    point_t tail = { .x = CENTER, .y = CENTER };
+    // point_t head = {};
+    // point_t tail = { .x = CENTER, .y = CENTER };
+    point_t head = { .x = CENTER, .y = CENTER };
+    point_t tail = {};
 
-    init_draw_snake(snake, snake_length, tail, &head);
+    // Initial draw of snake on plot
+    // init_draw_snake(snake, snake_length, tail, &head);
 
+    draw_snake(snake, snake_length, head);
     mvprintw(1, 0, "Head calculated at: (%d, %d)", head.y, head.x);
-    // for (size_t i = 0; i < abs(head.y - tail.y); i++)
-    // {
-    //     mvprintw(tail.x, tail.y + i, "o");
-    // }
-    
     mvprintw(0, 0, "AT moment before move: (%d, %d)", tail.y, tail.x);
     printw("\n");
     refresh();
 
     while (1) {
-        // for (size_t i = 0; i < snake_length; i++)
-        // {
-        //     printw(" %d", snake[i]);
-        // }
-        // sleep(1);
-
         struct timespec start, end;
         clock_gettime(CLOCK_MONOTONIC, &start);
         long elapsed_ms = 0;
         
         bool handle_input = true;
-        flushinp(); // flush input buffer
+        // flushinp(); // flush input buffer
+        
 
+        // Try to get a key press blocking for 100ms
+        key = getch();
         while (elapsed_ms < INPUT_TIMEOUT_MS)
         {
-            if (handle_input && (key = getch()) != ERR) 
-            {
-                // Handle input
-                change_direction(key);
-                handle_input = false;
-            }
+            struct timespec sleep_time;
+            sleep_time.tv_sec = 0;
+            sleep_time.tv_nsec = 25 * 1000000;
+            nanosleep(&sleep_time, NULL);
+
             clock_gettime(CLOCK_MONOTONIC, &end);
             elapsed_ms = (end.tv_sec - start.tv_sec) * 1000 + (end.tv_nsec - start.tv_nsec) / 1000000;
         }
         
+        // for (size_t i = 0; i < snake_length; i++)
+        // {
+        //     mvprintw(3, i + 2, "%c ", snake[i] ? (snake[i] == 1 ? 'R' : (snake[i] == 2 ? 'U' : 'D')) : 'L');
+        // }
+        // refresh();
         
-        // Try to get a key press blocking for 100ms
         
-        // clear();
-        moveSnake(&tail, &head);
+        if (key != ERR)
+        {
+            change_direction(key, &head);
+            flushinp(); // flush input buffer
+        }
+        else {
+            move_snake(&head);
+        }
+        clear();
+        // moveSnake(&tail, &head);
+        draw_snake(snake, snake_length, head);
 
         place_food();
 
