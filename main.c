@@ -6,6 +6,10 @@
 #include <unistd.h>
 #include <time.h>
 // #include <limits.h>
+// #include "snake_io.h"
+#include "snake_gui.h"
+#include "snake_controls.h"
+#include "constants.h"
 
 #define SIZE 24
 #define TOTAL (SIZE * SIZE)
@@ -14,11 +18,6 @@
 
 #define INPUT_TIMEOUT_MS 100
 
-typedef struct {
-    int x;
-    int y;
-} point_t;
-
 static const int initial_snake[]  = { RIGHT, RIGHT, RIGHT, RIGHT };
 // static const int initial_snake[]  = { RIGHT, RIGHT, RIGHT, RIGHT, UP, UP, RIGHT, RIGHT, RIGHT, UP, UP, RIGHT };
 static const int initial_snake_size = sizeof(initial_snake) / sizeof(initial_snake[0]);
@@ -26,136 +25,76 @@ static const int initial_snake_size = sizeof(initial_snake) / sizeof(initial_sna
 static int snake[TOTAL];
 static int snake_length;
 
-static bool food = false;
+static int snake_map_coordinates[SIZE][SIZE] = {0};
+
+static point_t head = { .x = CENTER, .y = CENTER };
+static point_t tail = {};
+
+static point_t food = { .x = 14, .y = 7 };
 
 static void init_snake()
 {
     memcpy(&snake, initial_snake, initial_snake_size * sizeof(int));
     snake_length = initial_snake_size;
+
+    snake_controls_init(snake, &snake_length);
+    snake_gui_init(snake_map_coordinates);
 }
 
-static void draw_snake(int snake[TOTAL], int snake_length, point_t head)
+int monitor_snake()
 {
-    int temp_curr_x = head.x;
-    int temp_curr_y = head.y;
+    if (head.x == food.x && head.y == food.y)
+    {
+        // shift_left(snake, snake_length);
+        // snake_length = snake_length + 1;
+        shift_right(snake, snake_length);
+        snake_length = snake_length + 1;
+        place_food(&food);
+    }
+    
+    if (snake_map_coordinates[head.y][head.x])
+    {
+        mvprintw(CENTER, CENTER, "YOU LOST...\n");
+        refresh();
 
+        struct timespec sleep_time;
+        sleep_time.tv_sec = 3;
+        sleep_time.tv_nsec = 0;
+        nanosleep(&sleep_time, NULL);
+        
+        return 0;
+    }
+    
+    return 1;
+}
+
+static void recalculate()
+{
+    memset(snake_map_coordinates, 0, 24 * 24 * sizeof(int));
+
+    int curr_x = head.x;
+    int curr_y = head.y;
+    
     for (int i = snake_length - 1; i >= 0; i--)
     {
         switch (snake[i])
         {
             case LEFT:
-                mvprintw(temp_curr_y, temp_curr_x++, "L");
+                curr_x++;
                 break;
             case RIGHT:
-                mvprintw(temp_curr_y, temp_curr_x--, "R");
+                curr_x--;
                 break;
             case UP:
-                mvprintw(temp_curr_y++, temp_curr_x, "U");
+                curr_y++;
                 break;
             case DOWN:
-                mvprintw(temp_curr_y--, temp_curr_x, "D");
+                curr_y--;
                 break;
             default:
                 return;
         }
-    }
-}
-
-static void move_snake(point_t * p_head)
-{
-    int head_is = snake[snake_length - 1];
-
-    switch (head_is) {
-        case DOWN:
-            p_head->y += 1;
-            break;
-        case UP:
-            p_head->y -= 1;
-            break;
-        case RIGHT:
-            p_head->x += 1;
-            break;
-        case LEFT:
-            p_head->x -= 1;
-            break;
-    }
-
-    shift_left(snake, snake_length);
-}
-
-static void place_food()
-{
-    if (!food)
-    {
-        mvprintw(8, 42, "*");
-        food = true;
-    }
-}
-
-typedef struct {
-	e_direction next_states[4];     
-} direction_config_t;
-
-static e_direction get_direction(int key_code)
-{
-    static const int key_map[] = {
-        KEY_LEFT,   // LEFT  
-        KEY_RIGHT,  // RIGHT 
-        KEY_UP,     // TOP   
-        KEY_DOWN    // DOWN  
-    };
-
-    return index_of(key_map, sizeof(key_map) / sizeof(key_map[0]), key_code);    
-}
-
-static const direction_config_t state_machine[5] = {
-		{ { LEFT, LEFT, UP, DOWN } },   // 0: LEFT
-		{ { RIGHT, RIGHT, UP, DOWN } }, // 1: RIGHT
-		{ { LEFT, RIGHT, UP, UP } },    // 2: UP
-		{ { LEFT, RIGHT, DOWN, DOWN } } // 3: DOWN
-};
-
-static void change_direction(int key, point_t * p_head)
-{
-    switch (key)
-    {
-        case 'q':
-            printw("Exiting...\n");
-            refresh();
-            endwin(); // End curses mode
-            return;
-        default:
-            break;
-    }
-
-    e_direction input;
-    if ((input = get_direction(key)) != -1)
-    {
-        e_direction current_direction = snake[snake_length - 1];
-        e_direction next_direction = state_machine[current_direction].next_states[input];
-
-        shift_left(snake, snake_length);
-        snake[snake_length - 1] = next_direction;
-        // snake_length = snake_length + 1;
-
-        switch (next_direction) {
-            case DOWN:
-                p_head->y += 1;
-                break;
-            case UP:
-                p_head->y -= 1;
-                break;
-            case RIGHT:
-                p_head->x += 1;
-                break;
-            case LEFT:
-                p_head->x -= 1;
-                break;
-        }
-    }
-    else
-    {
-        printw("Uknownn key: %d\n", key);
+        snake_map_coordinates[curr_y][curr_x] = 1;
     }
 }
 
@@ -177,11 +116,6 @@ int main(void)
     // Initialize snake array.
     init_snake();
 
-    // point_t head = {};
-    // point_t tail = { .x = CENTER, .y = CENTER };
-    point_t head = { .x = CENTER, .y = CENTER };
-    point_t tail = {};
-
     // Initial draw of snake on plot
     // init_draw_snake(snake, snake_length, tail, &head);
 
@@ -191,14 +125,14 @@ int main(void)
     printw("\n");
     refresh();
 
-    while (1) {
+    int snake_alive = 1;
+
+    while (snake_alive) {
+        mvprintw(0, 0, "Food: (%d, %d)", food.y, food.x);
+        mvprintw(1, 0, "Head: (%d, %d)", head.y, head.x);
         struct timespec start, end;
         clock_gettime(CLOCK_MONOTONIC, &start);
         long elapsed_ms = 0;
-        
-        bool handle_input = true;
-        // flushinp(); // flush input buffer
-        
 
         // Try to get a key press blocking for 100ms
         key = getch();
@@ -222,44 +156,37 @@ int main(void)
         
         if (key != ERR)
         {
-            change_direction(key, &head);
-            flushinp(); // flush input buffer
+            switch (key) 
+            {
+                case KEY_DOWN:
+                case KEY_UP:
+                case KEY_RIGHT:
+                case KEY_LEFT:
+                    change_direction(key, &head);
+                    flushinp(); // flush input buffer
+                    break;       
+                case 'q':
+                    printw("Exiting...\n");
+                    refresh();
+                    endwin(); // End curses mode
+                    return 0;
+                default:
+                    printw("Unknown key: %d\n", key);
+                    break;
+            }
         }
         else {
             move_snake(&head);
         }
+
+
+        recalculate();
+        snake_alive = monitor_snake();
         clear();
-        // moveSnake(&tail, &head);
+        
         draw_snake(snake, snake_length, head);
+        draw_food(food);
 
-        place_food();
-
-        // switch (key) {
-        //     case KEY_DOWN:
-        //         mvprintw(tail.x++, head.y, " ");
-        //         mvprintw(head.x += 1, head.y, "o");
-        //         break;
-        //     case KEY_UP:
-        //         mvprintw(tail.x--, tail.y, " ");
-        //         mvprintw(head.x -= 1, head.y, "o");
-        //         break;
-        //     case KEY_RIGHT:
-        //         mvprintw(tail.x, tail.y++, " ");
-        //         mvprintw(head.x, head.y += 1, "o");
-        //         break;
-        //     case KEY_LEFT:
-        //         mvprintw(tail.x, tail.y--, " ");
-        //         mvprintw(head.x, head.y -= 1, "o");
-        //         break;
-        //     case 'q':
-        //         printw("Exiting...\n");
-        //         refresh();
-        //         endwin(); // End curses mode
-        //         return 0;
-        //     default:
-        //         printw("Unknown key: %d\n", key);
-        //         break;
-        // }
         refresh(); // Refresh the screen to show the output
     }
 

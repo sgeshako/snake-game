@@ -20,6 +20,16 @@ void shift_left(int arr[], int size)
         arr[i] = arr[i + 1];
     }
 
-    // Set the last element to 0 (or any default value)
-    // arr[size - 1] = 0;
+    // Last element remains unaltered
+}
+
+// Fuction to shift array one element to the right.
+void shift_right(int arr[], int size) 
+{
+    // Shift all elements to the left
+    for (int i = size - 1; i >= 0; i--) {
+        arr[i + 1] = arr[i];
+    }
+
+    // First element remains unaltered
 }
