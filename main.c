@@ -11,9 +11,6 @@
 #include "snake_controls.h"
 #include "constants.h"
 
-#define SIZE 24
-#define TOTAL (SIZE * SIZE)
-
 #define CENTER (SIZE / 2)
 
 #define INPUT_TIMEOUT_MS 100
@@ -37,7 +34,7 @@ static void init_snake()
     memcpy(&snake, initial_snake, initial_snake_size * sizeof(int));
     snake_length = initial_snake_size;
 
-    snake_controls_init(snake, &snake_length);
+    snake_controls_init(snake, &snake_length, snake_map_coordinates);
     snake_gui_init(snake_map_coordinates);
 }
 
@@ -45,10 +42,9 @@ int monitor_snake()
 {
     if (head.x == food.x && head.y == food.y)
     {
-        // shift_left(snake, snake_length);
-        // snake_length = snake_length + 1;
         shift_right(snake, snake_length);
         snake_length = snake_length + 1;
+     
         place_food(&food);
     }
     
@@ -66,36 +62,6 @@ int monitor_snake()
     }
     
     return 1;
-}
-
-static void recalculate()
-{
-    memset(snake_map_coordinates, 0, 24 * 24 * sizeof(int));
-
-    int curr_x = head.x;
-    int curr_y = head.y;
-    
-    for (int i = snake_length - 1; i >= 0; i--)
-    {
-        switch (snake[i])
-        {
-            case LEFT:
-                curr_x++;
-                break;
-            case RIGHT:
-                curr_x--;
-                break;
-            case UP:
-                curr_y++;
-                break;
-            case DOWN:
-                curr_y--;
-                break;
-            default:
-                return;
-        }
-        snake_map_coordinates[curr_y][curr_x] = 1;
-    }
 }
 
 int main(void)
@@ -162,7 +128,7 @@ int main(void)
                 case KEY_UP:
                 case KEY_RIGHT:
                 case KEY_LEFT:
-                    change_direction(key, &head);
+                    move_snake(&head, new_direction(key));
                     flushinp(); // flush input buffer
                     break;       
                 case 'q':
@@ -176,16 +142,15 @@ int main(void)
             }
         }
         else {
-            move_snake(&head);
+            move_snake(&head, -1);
         }
 
-
-        recalculate();
         snake_alive = monitor_snake();
         clear();
         
         draw_snake(snake, snake_length, head);
         draw_food(food);
+        draw_border();
 
         refresh(); // Refresh the screen to show the output
     }

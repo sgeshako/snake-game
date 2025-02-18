@@ -6,4 +6,7 @@ typedef struct {
     int y;
 } point_t;
 
+#define SIZE 24
+#define TOTAL (SIZE * SIZE)
+
 #endif // CONSTANTS_H

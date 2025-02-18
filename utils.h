@@ -16,3 +16,5 @@ int index_of(const int arr[], int size, int target);
 
 // Fuction to shift array one element to the left.
 void shift_left(int arr[], int size); 
+
+void shift_right(int arr[], int size);
