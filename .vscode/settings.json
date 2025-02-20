@@ -1,0 +1,16 @@
+{
+    "files.associations": {
+        "ncurses.h": "c",
+        "unistd.h": "c",
+        "time.h": "c",
+        "limits.h": "c",
+        "stdlib.h": "c",
+        "snake_controls.h": "c",
+        "snake_gui.h": "c",
+        "stddef.h": "c",
+        "constants.h": "c",
+        "snake_io.h": "c",
+        "windows.h": "c",
+        "utils.h": "c"
+    }
+}

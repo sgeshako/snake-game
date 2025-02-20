@@ -1,15 +1,13 @@
 #include "snake_gui.h"
-// #include <stddef.h>
 #include "snake_controls.h"
 #include <string.h>
 #include <stdlib.h>
-#include <stdio.h>
-#include <ncurses.h>
+#include "snake_io.h"
 #include "constants.h"
 
 #define OFFSET 5
 
-#define DRAW_GAME_PLOT(y, x, ...) mvprintw((y) + OFFSET, (x) + OFFSET, __VA_ARGS__)
+#define DRAW_GAME_PLOT(y, x, ...) print_output_at((y) + OFFSET, (x) + OFFSET, __VA_ARGS__)
 
 
 // static int (*mp_snake)[1000] = NULL;
@@ -87,7 +85,7 @@ void place_food(point_t* p_food)
         }
     }
     
-    printf("ERROR: Couldn't place food randomly -.-\n");
+    print_output("ERROR: Couldn't place food randomly -.-\n");
 }
 
 void draw_food(point_t food)

@@ -9,4 +9,12 @@ typedef struct {
 #define SIZE 24
 #define TOTAL (SIZE * SIZE)
 
+typedef enum
+{
+    LEFT,
+    RIGHT,
+    UP,
+    DOWN
+} e_direction;
+
 #endif // CONSTANTS_H
