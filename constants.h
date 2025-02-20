@@ -6,7 +6,14 @@ typedef struct {
     int y;
 } point_t;
 
+/**
+ * Size of the game plot for rows and cols.
+ */
 #define SIZE 24
+
+/**
+ * Total size of the game plot (rows x cols).
+ */
 #define TOTAL (SIZE * SIZE)
 
 typedef enum

@@ -2,29 +2,39 @@
 #include <stdlib.h>
 #include <string.h>
 #include "utils.h"
-#include <unistd.h>
-#include <time.h>
 #include "snake_io.h"
 #include "snake_gui.h"
 #include "snake_controls.h"
 #include "constants.h"
 
+/* Center location of game plot. */
 #define CENTER (SIZE / 2)
 
+/**
+ * Maximum timeout to wait for user input in milliseconds.
+ */
 #define INPUT_TIMEOUT_MS 100
 
+/* Values used to initialize Snake. */
 static const int initial_snake[]  = { RIGHT, RIGHT, RIGHT, RIGHT };
-// static const int initial_snake[]  = { RIGHT, RIGHT, RIGHT, RIGHT, UP, UP, RIGHT, RIGHT, RIGHT, UP, UP, RIGHT };
 static const int initial_snake_size = sizeof(initial_snake) / sizeof(initial_snake[0]);
 
+/**
+ * Static array contains the actual Snake.
+ */
 static int snake[TOTAL];
-static int snake_length;
+static int snake_length; /**< The length of the Snake inside the static array. */
 
+/**
+ * Indicates current coordinates of Snake on the game plot.
+ */
 static int snake_map_coordinates[SIZE][SIZE] = {0};
 
+/** Snake head coordinates. */
 static point_t head = { .x = CENTER, .y = CENTER };
 static point_t tail = {};
 
+/** Food coordinates. */
 static point_t food = { .x = 14, .y = 7 };
 
 static void init_snake()
@@ -51,10 +61,6 @@ int monitor_snake()
         print_output_at(CENTER, CENTER, "YOU LOST...\n");
         refresh_screen();
 
-        // struct timespec sleep_time;
-        // sleep_time.tv_sec = 3;
-        // sleep_time.tv_nsec = 0;
-        // nanosleep(&sleep_time, NULL);
         platform_sleep(3000);
         
         return 0;
@@ -70,9 +76,6 @@ int main(void)
     // Initialize I/O
     snake_io_init(INPUT_TIMEOUT_MS);
 
-    print_output("Press arrow keys (Left, Right, Up, Down) to move. Press 'q' to quit.\n");
-    refresh_screen();
-
     // Initialize snake array.
     init_snake();
 
@@ -83,9 +86,10 @@ int main(void)
     int snake_alive = 1;
 
     while (snake_alive) {
-        print_output_at(0, 0, "Snake length: %d", snake_length);
-        print_output_at(1, 0, "Food: (%d, %d)", food.y, food.x);
-        print_output_at(2, 0, "Head: (%d, %d)", head.y, head.x);
+        print_output_at(0, 0, "Press arrow keys (Left, Right, Up, Down) to move. Press 'q' to quit.");
+        print_output_at(1, 0, "Snake length: %d", snake_length);
+        print_output_at(2, 0, "Food: (%d, %d)", food.y, food.x);
+        print_output_at(3, 0, "Head: (%d, %d)", head.y, head.x);
 
         key = wait_for_input();
         

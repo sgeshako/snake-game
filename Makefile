@@ -1,7 +1,8 @@
 
+OUTPUT_DIRECTORY = build
 
 SRCS = main.c snake_controls.c snake_gui.c utils.c
-OBJS = $(SRCS:.c=.o)
+OBJS = $(patsubst %.c, $(OUTPUT_DIRECTORY)/%.o, $(SRCS))
 
 # TARGET = main.bin
 
@@ -11,19 +12,23 @@ PLATFORM_TARGET ?= linux
 ifeq ($(PLATFORM_TARGET), linux)
     SRCS += snake_io_linux.c
 	LDFLAGS = -lncurses
-	TARGET = main.bin
+	TARGET = $(OUTPUT_DIRECTORY)/snake.bin
 else ifeq ($(PLATFORM_TARGET), windows)
     SRCS += snake_io_windows.c
-	TARGET = main.exe
+	TARGET = $(OUTPUT_DIRECTORY)/snake.exe
 else
     $(error Invalid PLATFORM_TARGET specified. Use PLATFORM_TARGET=linux or PLATFORM_TARGET=windows)
 endif
 
 # Default rule: Build the program
-all: $(TARGET)
+all: $(OUTPUT_DIRECTORY) $(TARGET)
+
+# Create build directory if it doesn't exist
+$(OUTPUT_DIRECTORY):
+	mkdir -p build
 
 # Compile each .c file into a .o file
-%.o: %.c %.h
+$(OUTPUT_DIRECTORY)/%.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 # Link object files into the final binary
@@ -42,4 +47,4 @@ windows:
 	@$(MAKE) PLATFORM_TARGET=windows all
 	
 clean:
-	rm -f $(OBJS) $(TARGET)
+	rm -rf $(OUTPUT_DIRECTORY)

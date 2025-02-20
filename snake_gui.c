@@ -1,25 +1,21 @@
 #include "snake_gui.h"
-#include "snake_controls.h"
 #include <string.h>
 #include <stdlib.h>
 #include "snake_io.h"
 #include "constants.h"
 
+/**
+ * Offset where game plot should begin relative to console screen.
+ */
 #define OFFSET 5
 
 #define DRAW_GAME_PLOT(y, x, ...) print_output_at((y) + OFFSET, (x) + OFFSET, __VA_ARGS__)
 
-
-// static int (*mp_snake)[1000] = NULL;
-// static int *mp_snake_length = NULL;
 static int (*mp_snake_map_coordinates)[SIZE] = NULL;
 
-// void snake_gui_init(int* p_snake, int* p_snake_length)
 void snake_gui_init(int (*p_snake_map_coordinates)[SIZE])
 {
     mp_snake_map_coordinates = p_snake_map_coordinates;
-    // mp_snake = p_snake;
-    // mp_snake_length = p_snake_length;
 }
 
 static inline int wrap_cursor(int next_value)

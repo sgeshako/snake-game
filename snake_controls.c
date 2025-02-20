@@ -14,6 +14,9 @@ void snake_controls_init(int* p_snake, int* p_snake_length, int (*p_snake_map_co
     mp_snake_map_coordinates = p_snake_map_coordinates;
 }
 
+/**
+ * State machine holds the available direction changes for each direction.
+ */
 static const direction_config_t state_machine[] = {
 		{ { LEFT, LEFT, UP, DOWN } },   // 0: LEFT
 		{ { RIGHT, RIGHT, UP, DOWN } }, // 1: RIGHT
@@ -49,7 +52,6 @@ static void recalculate_snake_coordinates(point_t new_head)
     
     for (int i = *mp_snake_length - 1; i >= 0; i--)
     {
-        /// fault
         switch (mp_snake[i])
         {
             case LEFT:
@@ -73,13 +75,16 @@ static void recalculate_snake_coordinates(point_t new_head)
 
 void move_snake(point_t * p_head, e_direction change_direction)
 {
+    // 1. Shift Snake to the left while preserving the head.
     shift_left(mp_snake, *mp_snake_length);
 
     if (change_direction != -1)
     {
+        // 2. Switch head direction if necessary.
         mp_snake[*mp_snake_length - 1] = change_direction;
     }
     
+    // 3. Calculate new head position.
     e_direction head_is = mp_snake[*mp_snake_length - 1];
 
     switch (head_is) {
@@ -97,5 +102,6 @@ void move_snake(point_t * p_head, e_direction change_direction)
             break;
     }
 
+    // 4. Recalculate Snake coordinates excluding head.
     recalculate_snake_coordinates(*p_head);
 }
