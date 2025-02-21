@@ -4,6 +4,11 @@
 #include "constants.h"
 #include "utils.h"
 
+/**
+ * Maximum timeout to wait for user input in milliseconds.
+ */
+#define INPUT_TIMEOUT_OVERRIDE_MS 50
+
 static int input_timeout_ms = -1;
 
 static HANDLE hConsole = NULL;
@@ -14,7 +19,8 @@ void snake_io_init(int timeout_ms)
     hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     hInput = GetStdHandle(STD_INPUT_HANDLE);
     
-    input_timeout_ms = timeout_ms;
+    // Shorter input timeout for Windows works better
+    input_timeout_ms = INPUT_TIMEOUT_OVERRIDE_MS;
 }
 
 void snake_io_exit()
@@ -31,7 +37,7 @@ int wait_for_input()
     QueryPerformanceCounter(&start);
     double elapsed_ms = 0;
 
-    // Try to get a key press blocking for 100ms
+    // Try to get a key press blocking for 50ms
     if (WaitForSingleObject(hInput, input_timeout_ms) == WAIT_OBJECT_0)
     {
         DWORD events;
@@ -39,6 +45,9 @@ int wait_for_input()
         
         ReadConsoleInput(hInput, &inputRecord, 1, &events);
         key = inputRecord.Event.KeyEvent.wVirtualKeyCode;
+
+        QueryPerformanceCounter(&end);
+        elapsed_ms = (end.QuadPart - start.QuadPart) * 1000.0 / frequency.QuadPart;
     }
     
     // if early, wait for the remaining ms 
