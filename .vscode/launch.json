@@ -8,7 +8,7 @@
             "name": "Run C Program",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/main.bin",
+            "program": "${workspaceFolder}/build/snake.bin",
             "cwd": "${workspaceFolder}",
             "preLaunchTask": "Build with Make",
             "console": "integratedTerminal",
@@ -18,7 +18,7 @@
             "name": "Debug C Program",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/main.bin",  // Path to your executable
+            "program": "${workspaceFolder}/build/snake.bin",  // Path to your executable
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

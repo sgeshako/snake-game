@@ -1,8 +1,10 @@
 
+SRC_DIRECTORY = src
 OUTPUT_DIRECTORY = build
 
-SRCS = main.c snake_controls.c snake_gui.c utils.c
-OBJS = $(patsubst %.c, $(OUTPUT_DIRECTORY)/%.o, $(SRCS))
+_SRCS = main.c snake_controls.c snake_gui.c utils.c
+SRCS = $(_SRCS:%.c=$(SRC_DIRECTORY)/%.c)
+OBJS = $(patsubst $(SRC_DIRECTORY)/%.c, $(OUTPUT_DIRECTORY)/%.o, $(SRCS))
 
 # TARGET = main.bin
 
@@ -10,11 +12,11 @@ OBJS = $(patsubst %.c, $(OUTPUT_DIRECTORY)/%.o, $(SRCS))
 PLATFORM_TARGET ?= linux
 
 ifeq ($(PLATFORM_TARGET), linux)
-    SRCS += snake_io_linux.c
+    SRCS += $(SRC_DIRECTORY)/snake_io_linux.c
 	LDFLAGS = -lncurses
 	TARGET = $(OUTPUT_DIRECTORY)/snake.bin
 else ifeq ($(PLATFORM_TARGET), windows)
-    SRCS += snake_io_windows.c
+    SRCS += $(SRC_DIRECTORY)/snake_io_windows.c
 	TARGET = $(OUTPUT_DIRECTORY)/snake.exe
 else
     $(error Invalid PLATFORM_TARGET specified. Use PLATFORM_TARGET=linux or PLATFORM_TARGET=windows)
@@ -28,7 +30,7 @@ $(OUTPUT_DIRECTORY):
 	mkdir -p build
 
 # Compile each .c file into a .o file
-$(OUTPUT_DIRECTORY)/%.o: %.c
+$(OUTPUT_DIRECTORY)/%.o: $(SRC_DIRECTORY)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 # Link object files into the final binary
